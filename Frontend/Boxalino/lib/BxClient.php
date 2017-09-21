@@ -82,7 +82,7 @@ class BxClient
 		$this->socketSendTimeout = $socketSendTimeout;
 		$this->socketRecvTimeout = $socketRecvTimeout;
 	}
-	
+
 	public function setRequestMap($requestMap) {
 		$this->requestMap = $requestMap;
 	}
@@ -352,11 +352,13 @@ class BxClient
 		$request->setDefaultRequestMap($this->requestMap);
 		$this->chooseRequests[] = $request;
 	}
-	
+
 	public function resetRequests() {
 		$this->chooseRequests = array();
 	}
-	
+	public function getRequests(){
+	    return $this->chooseRequests;
+    }
 	public function getRequest($index=0) {
 		if(sizeof($this->chooseRequests) <= $index) {
 			return null;
@@ -410,7 +412,6 @@ class BxClient
 			
 			$choiceInquiries[] = $choiceInquiry;
 		}
-
 		$choiceRequest = $this->getChoiceRequest($choiceInquiries, $this->getRequestContext());
 		return $choiceRequest;
 	}

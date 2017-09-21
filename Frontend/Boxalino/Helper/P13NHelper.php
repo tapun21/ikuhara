@@ -151,6 +151,54 @@ class Shopware_Plugins_Frontend_Boxalino_Helper_P13NHelper {
         self::$bxClient->addRequest($bxRequest);
         self::$choiceContexts[$choiceId][] = $type;
     }
+    
+    public function addPortfolio($data){
+        $lang = $this->getShortLocale();
+        $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($lang, "", 0, $data['choiceId_portfolio']);
+        self::$bxClient->addRequest($bxRequest);
+        $bxRequest = null;
+        $response = self::$bxClient->getResponse();
+        $groups = json_decode($response->getExtraInfo('portfolio_json', null, $data['choiceId_portfolio']), true);
+        $this->flushResponses();
+        $this->resetRequests();
+        $portfolioData = [];
+        $rebuyChoice = $data['choiceId_re-buy'];
+        $rebuyMax = $data['article_slider_max_number_rebuy'];
+        $reorientChoice = $data['choiceId_re-orient'];
+        $reorientMax = $data['article_slider_max_number_reorient'];
+        $requestFilters = $this->getSystemFilters("product", "", true);
+
+        foreach ($groups as $group) {
+            $groupData = $group;
+            $request = new \com\boxalino\bxclient\v1\BxParametrizedRequest($lang, $rebuyChoice, $rebuyMax, 'products_ordernumber');
+            $request->setReturnFields($this->getReturnFields());
+            $request->setGroupBy('products_group_id');
+            $request->setFilters($requestFilters);
+            self::$bxClient->addRequest($request);
+            $request = new \com\boxalino\bxclient\v1\BxParametrizedRequest($lang, $reorientChoice, $reorientMax, 'products_ordernumber');
+            $request->setReturnFields($this->getReturnFields());
+            $request->setGroupBy('products_group_id');
+            $request->setFilters($requestFilters);
+            self::$bxClient->addRequest($request);
+            $request = null;
+            foreach ($group['context_parameter'] as $key => $value) {
+                self::$bxClient->addRequestContextParameter($key, $value);
+            }
+            $values = $this->convertToFieldArray(
+                self::$bxClient->getResponse()->getHitFieldValues(['products_ordernumber'], $rebuyChoice, true, 0),
+                'products_ordernumber');
+            $groupData['rebuy'] = $this->getLocalArticles($values);
+            $values = $this->convertToFieldArray(
+                self::$bxClient->getResponse()->getHitFieldValues(['products_ordernumber'], $reorientChoice, true, 0),
+                'products_ordernumber');
+            $groupData['reorient'] = $this->getLocalArticles($values);
+            $this->flushResponses();
+            $this->resetRequests();
+            $portfolioData[$group['group_name']] = $groupData;
+        }
+        return $portfolioData;
+    }
+
 
     /**
      * @param $options
@@ -160,6 +208,7 @@ class Shopware_Plugins_Frontend_Boxalino_Helper_P13NHelper {
         $bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
 
         foreach ($options as $fieldName => $option) {
+
             if ($fieldName == 'category') {
                 $bxFacets->addCategoryFacet($option['value']);
                 continue;
@@ -267,13 +316,22 @@ class Shopware_Plugins_Frontend_Boxalino_Helper_P13NHelper {
      * @return array
      */
     public function autocomplete($queryText, $with_blog = false, $no_result = false) {
+        if(!$this->config->get('boxalino_noresults_recommendation_enabled') && $no_result) {
+            return [];
+        }
         $search_choice = $no_result === true ? "noresults" : $this->getSearchChoice($queryText);
         $auto_complete_choice = $this->config->get('boxalino_autocomplete_widget_name');
         $textual_Limit = $this->config->get('boxalino_textual_suggestion_limit', 3);
         $product_limit = $this->config->get('boxalino_product_suggestion_limit', 3);
+        $blog_limit = $this->config->get('boxalino_blog_suggestion_limit', 3);
+
         $searches = ($with_blog === false) ? array('product') : array('product','blog');
         $bxRequests = array();
         foreach ($searches as $i => $search){
+            if($search == 'blog') {
+               $textual_Limit = $blog_limit;
+               $product_limit = $blog_limit;
+            }
             $bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->getShortLocale(),
                 $queryText, $textual_Limit, $product_limit, $auto_complete_choice,
                 $search_choice
@@ -393,7 +451,7 @@ class Shopware_Plugins_Frontend_Boxalino_Helper_P13NHelper {
                     'title' => $result['articleName']
                 ));
             }
-            
+
             return array(
                 'sSearchRequest' => array('sSearch' => $queryText),
                 'sSearchResults' => array(

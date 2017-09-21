@@ -32,10 +32,14 @@ class Shopware_Plugins_Frontend_Boxalino_FrontendInterceptor
         switch ($this->Request()->getParam('controller')) {
             case 'detail':
                 $sArticle = $this->View()->sArticle;
-                if(is_null($sArticle) || !isset($sArticle['articleID']))break;
+                if(is_null($sArticle))break;
                 if ($this->Config()->get('boxalino_detail_recommendation_ajax')) {
                     $this->View()->addTemplateDir($this->Bootstrap()->Path() . 'Views/emotion/');
-                    $this->View()->extendsTemplate('frontend/plugins/boxalino/detail/index_ajax.tpl');
+                    if(version_compare(Shopware::VERSION, '5.3.0', '>=')) {
+                        $this->View()->extendsTemplate('frontend/plugins/boxalino/detail/index_ajax_5_3.tpl');
+                    } else {
+                        $this->View()->extendsTemplate('frontend/plugins/boxalino/detail/index_ajax.tpl');
+                    }
                 } else {
                     $id = trim(strip_tags(htmlspecialchars_decode(stripslashes($this->Request()->sArticle))));
                     $choiceIds = array();

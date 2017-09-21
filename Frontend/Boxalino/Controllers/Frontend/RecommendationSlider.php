@@ -100,11 +100,9 @@ class Shopware_Controllers_Frontend_RecommendationSlider extends Enlight_Control
         $context = Shopware()->Shop()->getCategory()->getId() == $context ? null : $context;
         $helper->getRecommendation($choiceId, $count, $count, 0, $context, 'category', false);
         $hitsIds = $helper->getRecommendation($choiceId);
-        if($hitsIds) {
-            $this->View()->loadTemplate('frontend/_includes/product_slider_items.tpl');
-            $this->View()->assign('articles', $helper->getLocalArticles($hitsIds));
-            $this->View()->assign('productBoxLayout', "emotion");
-        }
+        $this->View()->loadTemplate('frontend/_includes/product_slider_items.tpl');
+        $this->View()->assign('articles', $helper->getLocalArticles($hitsIds));
+        $this->View()->assign('productBoxLayout', "emotion");
     }
 
     private function isValidCategory($categoryId) {

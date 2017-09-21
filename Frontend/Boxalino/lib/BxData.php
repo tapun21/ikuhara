@@ -36,45 +36,33 @@ class BxData
     public function getLanguages() {
         return $this->languages;
     }
-    public function addMainXmlItemFile($filePath, $itemIdColumn, $xPath='', $encoding = 'UTF-8', $sourceId = 'item_vals', $container = 'products', $validate=true) {
-        $sourceKey = $this->addXMLItemFile($filePath, $itemIdColumn, $xPath, $encoding, $sourceId, $container, $validate);
-        $this->addSourceIdField($sourceKey, $itemIdColumn, 'XML', null, $validate) ;
-        $this->addSourceStringField($sourceKey, "bx_item_id", $itemIdColumn, null, $validate) ;
-        return $sourceKey;
-    }
+
     public function addMainCSVItemFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\"", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = 'item_vals', $container = 'products', $validate=true) {
         $sourceKey = $this->addCSVItemFile($filePath, $itemIdColumn, $encoding, $delimiter, $enclosure, $escape, $lineSeparator, $sourceId, $container, $validate);
-        $this->addSourceIdField($sourceKey, $itemIdColumn, 'CSV', null, $validate) ;
+        $this->addSourceIdField($sourceKey, $itemIdColumn, null, $validate) ;
         $this->addSourceStringField($sourceKey, "bx_item_id", $itemIdColumn, null, $validate) ;
         return $sourceKey;
     }
 
     public function addMainCSVCustomerFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = 'customers', $container = 'customers', $validate=true) {
         $sourceKey = $this->addCSVItemFile($filePath, $itemIdColumn, $encoding, $delimiter, $enclosure, $escape, $lineSeparator, $sourceId, $container, $validate);
-        $this->addSourceIdField($sourceKey, $itemIdColumn, 'CSV', null, $validate) ;
+        $this->addSourceIdField($sourceKey, $itemIdColumn, null, $validate) ;
         $this->addSourceStringField($sourceKey, "bx_customer_id", $itemIdColumn, null, $validate) ;
         return $sourceKey;
     }
 
-    public function addCSVItemFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = null, $container = 'products', $validate=true, $maxLength=23) {
+    public function addCSVItemFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = null, $container = 'products', $validate=true) {
         $params = array('itemIdColumn'=>$itemIdColumn, 'encoding'=>$encoding, 'delimiter'=>$delimiter, 'enclosure'=>$enclosure, 'escape'=>$escape, 'lineSeparator'=>$lineSeparator);
         if($sourceId == null) {
-            $sourceId = $this->getSourceIdFromFileNameFromPath($filePath, $container, $maxLength, true);
+            $sourceId = $this->getFileNameFromPath($filePath, true);
         }
         return $this->addSourceFile($filePath, $sourceId, $container, 'item_data_file', 'CSV', $params, $validate);
     }
 
-    public function addXMLItemFile($filePath, $itemIdColumn, $xPath, $encoding = 'UTF-8', $sourceId = null, $container = 'products', $validate=true, $maxLength=23){
-        $params = array('itemIdColumn'=>$itemIdColumn, 'encoding'=>$encoding, 'baseXPath'=>$xPath);
-        if($sourceId == null) {
-            $sourceId = $this->getSourceIdFromFileNameFromPath($filePath, $container, $maxLength, true);
-        }
-        return $this->addSourceFile($filePath, $sourceId, $container, 'item_data_file', 'XML', $params, $validate);
-    }
-    public function addCSVCustomerFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = null, $container = 'customers', $validate=true, $maxLength=23) {
+    public function addCSVCustomerFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = null, $container = 'customers', $validate=true) {
         $params = array('itemIdColumn'=>$itemIdColumn, 'encoding'=>$encoding, 'delimiter'=>$delimiter, 'enclosure'=>$enclosure, 'escape'=>$escape, 'lineSeparator'=>$lineSeparator);
         if($sourceId == null) {
-            $sourceId = $this->getSourceIdFromFileNameFromPath($filePath, $container, $maxLength, true);
+            $sourceId = $this->getFileNameFromPath($filePath, true);
         }
         return $this->addSourceFile($filePath, $sourceId, $container, 'item_data_file', 'CSV', $params, $validate);
     }
@@ -84,10 +72,10 @@ class BxData
         return $this->addSourceFile($filePath, $sourceId, $container, 'hierarchical', 'CSV', $params, $validate);
     }
 
-    public function addResourceFile($filePath, $categoryIdColumn, $labelColumns, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = null, $container = 'products', $validate=true, $maxLength=23) {
+    public function addResourceFile($filePath, $categoryIdColumn, $labelColumns, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = null, $container = 'products', $validate=true) {
         $params = array('referenceIdColumn'=>$categoryIdColumn, 'labelColumns'=>$labelColumns, 'encoding'=>$encoding, 'delimiter'=>$delimiter, 'enclosure'=>$enclosure, 'escape'=>$escape, 'lineSeparator'=>$lineSeparator);
         if($sourceId == null) {
-            $sourceId = 'resource_' . $this->getSourceIdFromFileNameFromPath($filePath, $container, $maxLength, true);
+            $sourceId = 'resource_' . $this->getFileNameFromPath($filePath, true);
         }
         return $this->addSourceFile($filePath, $sourceId, $container, 'resource', 'CSV', $params, $validate);
     }
@@ -143,7 +131,7 @@ class BxData
             if (($handle = @fopen($this->sources[$container][$sourceId]['filePath'], "r")) !== FALSE) {
                 $count = 1;
                 $this->sources[$container][$sourceId]['rows'] = array();
-                while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                while (($data = fgetcsv($handle, 2000, ",")) !== FALSE) {
                     $this->sources[$container][$sourceId]['rows'][] = $data;
                     if($count++>=$maxRow) {
                         break;
@@ -174,9 +162,8 @@ class BxData
         }
     }
 
-    public function addSourceIdField($sourceKey, $col, $format, $referenceSourceKey=null, $validate=true) {
-        $id_field = $format == 'CSV' ? 'bx_id' : 'id';
-        $this->addSourceField($sourceKey, $id_field, "id", false, $col, $referenceSourceKey, $validate);
+    public function addSourceIdField($sourceKey, $col, $referenceSourceKey=null, $validate=true) {
+        $this->addSourceField($sourceKey, 'bx_id', "id", false, $col, $referenceSourceKey, $validate);
     }
 
     public function addSourceTitleField($sourceKey, $colMap, $referenceSourceKey=null, $validate=true) {
@@ -339,24 +326,17 @@ class BxData
                     $source->addAttribute('additional_item_source', $sourceValues['additional_item_source']);
                 }
                 $sourceValues['file'] = $this->getFileNameFromPath($sourceValues['filePath']);
-                if($sourceValues['format'] == 'CSV') {
-                    $parameters = array(
-                        'file'=>false,
-                        'format'=>'CSV',
-                        'encoding'=>'UTF-8',
-                        'delimiter'=>',',
-                        'enclosure'=>'"',
-                        'escape'=>'\\\\',
-                        'lineSeparator'=>"\\n"
-                    );
-                } else if($sourceValues['format'] == 'XML') {
-                    $parameters = array(
-                        'file'=>false,
-                        'format'=> $sourceValues['format'],
-                        'encoding'=>$sourceValues['encoding'],
-                        'baseXPath'=>$sourceValues['baseXPath']
-                    );
-                }
+
+                $parameters = array(
+                    'file'=>false,
+                    'format'=>'CSV',
+                    'encoding'=>'UTF-8',
+                    'delimiter'=>',',
+                    'enclosure'=>'"',
+                    'escape'=>'\\\\',
+                    'lineSeparator'=>"\\n"
+                );
+
                 switch($sourceValues['type']) {
                     case 'item_data_file':
                         $parameters['itemIdColumn'] = false;
@@ -440,7 +420,7 @@ class BxData
                         $logic = $transform->addChild('logic');
                         $logic->addAttribute('source', $sourceId);
                         $referenceSourceKey = isset($fieldValues['referenceSourceKey']) ? $fieldValues['referenceSourceKey'] : null;
-                        $logicType = (($sourceValues['format'] == 'XML') ? "xpath" : ($referenceSourceKey == null ? 'direct' : 'reference'));
+                        $logicType = $referenceSourceKey == null ? 'direct' : 'reference';
                         if($logicType == 'direct') {
                             if(isset($fieldValues['fieldParameters'])) {
                                 foreach ($fieldValues['fieldParameters'] as $parameterName => $parameterValue) {
@@ -588,43 +568,6 @@ class BxData
 
         $url = $this->host . self::URL_VERIFY_CREDENTIALS;
         return $this->callAPI($fields, $url);
-    }
-
-    public function alreadyExistingSourceId($sourceId, $container) {
-        return isset($this->sources[$container][$sourceId]);
-    }
-
-    public function getUnusedSourceIdPostFix($sourceId, $container) {
-        $postFix = 2;
-        foreach($this->sources[$container] as $sid => $values) {
-            if(strpos($sid, $sourceId) === 0) {
-                $count = str_replace($sourceId, '', $sid);
-                if($count >= $postFix) {
-                    $postFix = $count + 1;
-                }
-            }
-        }
-        return $postFix;
-    }
-
-    public function getSourceIdFromFileNameFromPath($filePath, $container, $maxLength=23, $withoutExtension=false) {
-        $sourceId = $this->getFileNameFromPath($filePath, $withoutExtension);
-        $shortened = false;
-        if(strlen($sourceId) > $maxLength) {
-            $sourceId = substr($sourceId, 0, $maxLength);
-            $shortened = true;
-        }
-        if($this->alreadyExistingSourceId($sourceId, $container)) {
-            if(!$shortened) {
-                throw new \Exception(
-                    'Synchronization failure: Same source id requested twice "' .
-                    $filePath . '". Please correct that only created once.'
-                );
-            }
-            $postFix = $this->getUnusedSourceIdPostFix($sourceId, $container);
-            $sourceId .= $postFix;
-        }
-        return $sourceId;
     }
 
     public function getFileNameFromPath($filePath, $withoutExtension=false) {

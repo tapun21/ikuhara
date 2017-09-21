@@ -25,7 +25,7 @@
             <div class="tab--navigation">
                 <a href="#" title="{s name='bx_search_tab_articles'}Artikel{/s}" class="tab--link">
                     <h2>{s name='bx_search_tab_articles'}Artikel{/s}</h2>
-                    <span class="product--rating-count">{$sSearchResults.sArticlesCount}</span>
+                    <span class="product--rating-count bx-tab-article-count">{$sSearchResults.sArticlesCount}</span>
                 </a>
                 {if $sBlogArticles}
                     <a href="#" title="{s name='bx_search_tab_blogs'}Blog-Beitr&auml;ge{/s}" class="tab--link tab--blog{if $bxActiveTab == 'blog'} is--active{/if}">
@@ -50,8 +50,11 @@
                                     </h1>
                                 {/block}
                                 {block name='frontend_bx_search_blog_content'}
-                                    {include file='frontend/blog/listing.tpl' sPage=$sBlogPage bxPageType='blog'}
+                                    {include file='frontend/blog/listing.tpl' sPage=$sBlogPage bxPageType='blog' sNumberPages=$sNumberPages}
                                 {/block}
+                                <script>
+
+                                </script>
                             </div>
                         </div>
                     </div>

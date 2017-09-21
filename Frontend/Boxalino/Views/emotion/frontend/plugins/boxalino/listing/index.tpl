@@ -10,6 +10,7 @@
             $.subscribe('plugin/swListingActions/onOpenFilterPanel', function() {
                 expandFacets(facetOptions);
             });
+
             $.overridePlugin('swFilterComponent',{
                 open: function(closeSiblings) {
                     var me = this;

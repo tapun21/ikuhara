@@ -31,7 +31,7 @@ class Shopware_Plugins_Frontend_Boxalino_Bootstrap
     }
 
     public function getVersion() {
-        return '1.4.16';
+        return '1.4.19';
     }
 
     public function getInfo() {
@@ -268,6 +268,46 @@ class Shopware_Plugins_Frontend_Boxalino_Bootstrap
                 'defaultValue' => 5000
             ));
         }
+        $component = $this->createEmotionComponent(array(
+            'name' => 'Boxalino Portfolio Recommendations',
+            'template' => 'boxalino_portfolio_recommendations',
+            'description' => 'Display Boxalino product recommendations for specific customer.',
+            'convertFunction' => null
+        ));
+        if ($component->getFields()->count() == 0) {
+            $component->createTextField(array(
+                'name' => 'choiceId_portfolio',
+                'fieldLabel' => 'Choice id for portfolio',
+                'allowBlank' => false,
+                'position' => 0
+            ));
+            $component->createTextField(array(
+                'name' => 'choiceId_re-buy',
+                'fieldLabel' => 'Choice id for re-buy',
+                'allowBlank' => false,
+                'position' => 1
+            ));
+            $component->createNumberField(array(
+                'name' => 'article_slider_max_number_rebuy',
+                'fieldLabel' => 'Maximum number of articles for re-buy',
+                'allowBlank' => false,
+                'defaultValue' => 10,
+                'position' => 2
+            ));
+            $component->createTextField(array(
+                'name' => 'choiceId_re-orient',
+                'fieldLabel' => 'Choice id for re-orient',
+                'allowBlank' => false,
+                'position' => 3
+            ));
+            $component->createNumberField(array(
+                'name' => 'article_slider_max_number_reorient',
+                'fieldLabel' => 'Maximum number of articles for re-orient',
+                'allowBlank' => false,
+                'defaultValue' => 10,
+                'position' => 4
+            ));
+        }
         $this->subscribeEvent(
             'Enlight_Controller_Action_PostDispatchSecure_Widgets_Campaign',
             'extendsEmotionTemplates'
@@ -279,14 +319,31 @@ class Shopware_Plugins_Frontend_Boxalino_Bootstrap
         $this->registerController('Frontend', 'RecommendationSlider');
         $this->registerController('Frontend', 'BxDebug');
     }
-
+    public function getShortLocale() {
+        $locale = Shopware()->Shop()->getLocale();
+        $shortLocale = $locale->getLocale();
+        $position = strpos($shortLocale, '_');
+        if ($position !== false)
+            $shortLocale = substr($shortLocale, 0, $position);
+        return $shortLocale;
+    }
     public function convertRecommendationSlider($args) {
         $data = $args->getReturn();
+        if ($args['element']['component']['template'] == "boxalino_portfolio_recommendations") {
+            $data['portfolio'] = $this->onPortfolioRecommendation($args, $data);
+            $data['lang'] = $this->getShortLocale();
+            return $data;
+        }
         if ($args['element']['component']['name'] != "Boxalino Slider Recommendations") {
             return $data;
         }
         $emotionRepository = Shopware()->Models()->getRepository('Shopware\Models\Emotion\Emotion');
-        $categoryId = $args->getSubject()->getEmotion($emotionRepository)[0]['categories'][0]['id'];
+        if(version_compare(Shopware::VERSION, '5.3.0', '>=')){
+            $emotionModel = $emotionRepository->findOneBy(array('id' => $args['element']['emotionId']));
+            $categoryId = $emotionModel->getCategories()->first()->getId();
+        } else {
+            $categoryId = $args->getSubject()->getEmotion($emotionRepository)[0]['categories'][0]['id'];
+        }
         $query = array(
             'controller' => 'RecommendationSlider',
             'module' => 'frontend',
@@ -308,8 +365,6 @@ class Shopware_Plugins_Frontend_Boxalino_Bootstrap
             }
         }
         $data["ajaxFeed"] = $url;
-        Shopware()->PluginLogger()->info("component match:: " . var_export($args['element']['component'], true));
-        Shopware()->PluginLogger()->info("result data:: " . var_export($data, true));
         return $data;
     }
 
@@ -334,6 +389,14 @@ class Shopware_Plugins_Frontend_Boxalino_Bootstrap
             }
         } catch (\Exception $e) {
             $this->logException($e, __FUNCTION__);
+        }
+    }
+
+    public function onPortfolioRecommendation(Enlight_Event_EventArgs $arguments, $data) {
+        try {
+            return $this->searchInterceptor->portfolio($arguments, $data);
+        } catch (\Exception $e) {
+            $this->logException($e, __FUNCTION__, $arguments->getSubject()->Request()->getRequestUri());
         }
     }
 
