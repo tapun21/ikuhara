@@ -1,0 +1,50 @@
+{
+  "en_GB": [
+    {"relaxation/didyoumean": "Did you mean..."},
+    {"search/noresult": "Our recommendation for you"},
+    {"search/resultsfor": "Search results for"},
+    {"search/correctedresultsfor": "Corrected search results for"},
+    {"filter/morevalues": "more values"},
+    {"filter/lessvalues": "less values"}
+  ],
+  "en_US": [
+    {"relaxation/didyoumean": "Did you mean..."},
+    {"search/noresult": "Our recommendation for you"},
+    {"search/resultsfor": "Search results for"},
+    {"search/correctedresultsfor": "Corrected search results for"},
+    {"filter/morevalues": "more values"},
+    {"filter/lessvalues": "less values"}
+  ],
+  "de_DE": [
+    {"relaxation/didyoumean": "Meinten Sie..."},
+    {"search/noresult": "Unsere Empfehlung für Sie"},
+    {"search/resultsfor": "Suchergebnis für"},
+    {"search/correctedresultsfor": "Korrigiertes Suchergebnis für"},
+    {"filter/morevalues": "mehr anzeigen"},
+    {"filter/lessvalues": "weniger anzeigen"}
+  ],
+  "de_CH": [
+    {"relaxation/didyoumean": "Meinten Sie..."},
+    {"search/noresult": "Unsere Empfehlung für Sie"},
+    {"search/resultsfor": "Suchergebnis für"},
+    {"search/correctedresultsfor": "Korrigiertes Suchergebnis für"},
+    {"filter/morevalues": "mehr anzeigen"},
+    {"filter/lessvalues": "weniger anzeigen"}
+  ],
+  "fr_CH": [
+    {"relaxation/didyoumean": "Vouliez-vous dire..."},
+    {"search/noresult": "Notre recommandation pour vous"},
+    {"search/resultsfor": "Résultats recherche pour"},
+    {"search/correctedresultsfor": "Résultats de recherche corrigés pour"},
+    {"filter/morevalues": "voir plus"},
+    {"filter/lessvalues": "voir moins"}
+  ],
+  "fr_FR": [
+    {"relaxation/didyoumean": "Vouliez-vous dire..."},
+    {"search/noresult": "Notre recommandation pour vous"},
+    {"search/resultsfor": "Résultats recherche pour"},
+    {"search/correctedresultsfor": "Résultats de recherche corrigés pour"},
+    {"filter/morevalues": "voir plus"},
+    {"filter/lessvalues": "voir moins"}
+  ]
+}
